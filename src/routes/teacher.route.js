@@ -10,6 +10,10 @@ import {
   updateTimetableHandler,
   deleteTimetableHandler,
 } from "../controllers/teacher.controller.js";
+import {
+  getStudentById,
+  updateStudentHandler,
+} from "../controllers/principal.controller.js";
 const router = Router();
 
 router
@@ -19,6 +23,11 @@ router
 router
   .route("/my-students")
   .get(authMiddleware, teacherOnly, getMyStudentsHandler);
+
+router
+  .route("/students/:id")
+  .get(authMiddleware, teacherOnly, getStudentById)
+  .put(authMiddleware, teacherOnly, updateStudentHandler);
 router
   .route("/timetable")
   .post(authMiddleware, teacherOnly, createTimetableHandler)

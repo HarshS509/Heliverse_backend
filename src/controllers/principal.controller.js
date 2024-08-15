@@ -87,7 +87,7 @@ export const deleteClassroomHandler = asyncHandler(async (req, res) => {
 // Teacher Handlers
 export const registerTeacherHandler = asyncHandler(async (req, res) => {
   const { email, password, firstName, lastName } = req.body;
-  console.log("hi");
+  // console.log("hi");
   if (!email || !password || !firstName || !lastName) {
     throw new ApiError(400, "Please provide all required fields");
   }
@@ -130,6 +130,7 @@ export const registerTeacherHandler = asyncHandler(async (req, res) => {
 
 export const updateTeacherHandler = asyncHandler(async (req, res) => {
   try {
+    // console.log("aa gya maal");
     const updates = Object.keys(req.body);
     const allowedUpdates = ["email", "firstName", "lastName", "password"];
     const isValidOperation = updates.every((update) =>
@@ -146,7 +147,19 @@ export const updateTeacherHandler = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Teacher not found");
     }
 
-    updates.forEach((update) => (teacher[update] = req.body[update]));
+    // Check if password is being updated
+    if (req.body.password) {
+      // Update password only if provided
+      teacher.password = req.body.password;
+    }
+
+    // Update other fields
+    updates.forEach((update) => {
+      if (update !== "password") {
+        teacher[update] = req.body[update];
+      }
+    });
+
     await teacher.save();
     res
       .status(200)
@@ -155,6 +168,7 @@ export const updateTeacherHandler = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Unable to update teacher profile :(");
   }
 });
+
 export const deleteTeacherHandler = asyncHandler(async (req, res) => {
   try {
     const teacher = await Teacher.findByIdAndDelete(req.params.id);
@@ -181,7 +195,7 @@ export const deleteTeacherHandler = asyncHandler(async (req, res) => {
 // Student Handlers
 export const registerStudentHandler = asyncHandler(async (req, res) => {
   const { email, password, firstName, lastName } = req.body;
-  console.log("student here", email);
+  // console.log("student here", email);
   if (!email || !password || !firstName || !lastName) {
     throw new ApiError(400, "Please provide all required fields");
   }
@@ -221,8 +235,10 @@ export const registerStudentHandler = asyncHandler(async (req, res) => {
       )
     );
 });
+
 export const updateStudentHandler = asyncHandler(async (req, res) => {
   try {
+    // console.log("aa gya maal");
     const updates = Object.keys(req.body);
     const allowedUpdates = ["email", "firstName", "lastName", "password"];
     const isValidOperation = updates.every((update) =>
@@ -239,13 +255,25 @@ export const updateStudentHandler = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Student not found");
     }
 
-    updates.forEach((update) => (student[update] = req.body[update]));
+    // Check if password is being updated
+    if (req.body.password) {
+      // Update password only if provided
+      student.password = req.body.password;
+    }
+
+    // Update other fields
+    updates.forEach((update) => {
+      if (update !== "password") {
+        student[update] = req.body[update];
+      }
+    });
+
     await student.save();
     res
       .status(200)
-      .json(new ApiResponse(200, { student }, "Student successfully updated"));
+      .json(new ApiResponse(200, { student }, "Student profile updated!"));
   } catch (error) {
-    throw new ApiError(400, "Error Updating student");
+    throw new ApiError(400, "Unable to update student profile :(");
   }
 });
 export const deleteStudentHandler = asyncHandler(async (req, res) => {
@@ -277,30 +305,35 @@ export const assignTeacherToClassroomHandler = asyncHandler(
     try {
       const { teacherId, classroomId } = req.body;
 
-      // Find the teacher and classroom by their IDs
-      const classroom = await Classroom.findById(classroomId);
-      const teacher = await Teacher.findById(teacherId);
+      // Find the classroom and teacher by their IDs
+      const classroom = await Classroom.findById(classroomId).populate(
+        "students"
+      );
+      const teacher = await Teacher.findById(teacherId).populate("students");
 
-      // Check if both teacher and classroom exist
+      // Check if both classroom and teacher exist
       if (!classroom || !teacher) {
         throw new ApiError(404, "Classroom or Teacher not found");
       }
 
-      // Ensure the teacher is not already assigned to another classroom
+      // Remove the teacher from the previous classroom if assigned
       if (teacher.classroom) {
         const previousClassroom = await Classroom.findById(teacher.classroom);
         if (previousClassroom) {
           // Remove the teacher from the previous classroom
           previousClassroom.teacher = null;
+          previousClassroom.students = previousClassroom.students.filter(
+            (student) => !teacher.students.includes(student._id)
+          );
           await previousClassroom.save();
         }
       }
 
-      // Ensure the classroom is not already occupied by another teacher
+      // Remove the previous teacher from the classroom if there was one
       if (classroom.teacher) {
         const previousTeacher = await Teacher.findById(classroom.teacher);
         if (previousTeacher) {
-          // Remove the teacher from the previous classroom
+          // Remove the classroom reference from the previous teacher
           previousTeacher.classroom = null;
           await previousTeacher.save();
         }
@@ -310,9 +343,23 @@ export const assignTeacherToClassroomHandler = asyncHandler(
       classroom.teacher = teacherId;
       teacher.classroom = classroomId;
 
+      // Add the teacher's students to the classroom's students array
+      classroom.students = [
+        ...new Set([
+          ...classroom.students,
+          ...teacher.students.map((student) => student._id),
+        ]),
+      ];
+
       // Save the updated classroom and teacher records
       await classroom.save();
       await teacher.save();
+
+      // Optionally, update students' classroom reference if necessary
+      await Student.updateMany(
+        { _id: { $in: teacher.students.map((student) => student._id) } },
+        { classroom: classroomId }
+      );
 
       res
         .status(201)
@@ -320,7 +367,7 @@ export const assignTeacherToClassroomHandler = asyncHandler(
           new ApiResponse(
             201,
             { classroom, teacher },
-            "Teacher assigned to classroom successfully"
+            "Teacher assigned to classroom and students updated successfully"
           )
         );
     } catch (error) {
@@ -379,19 +426,17 @@ export const assignStudentToTeacherHandler = asyncHandler(async (req, res) => {
     // Find the teacher, student, and their associated classroom
     const teacher = await Teacher.findById(teacherId).populate("classroom");
     const student = await Student.findById(studentId).populate("classroom");
-    console.log(teacher, student);
 
-    // Check if both teacher and student exist
     if (!teacher || !student) {
       throw new ApiError(404, "Teacher or Student not found");
     }
 
-    // Ensure the student is not already assigned to a teacher
+    // Ensure the student is not already assigned to the teacher
     if (student.teacher && student.teacher.toString() === teacherId) {
       throw new ApiError(400, "Student already assigned to this teacher");
     }
 
-    // Remove student from previous teacher's classroom if needed
+    // Remove student from previous teacher's students array if needed
     if (student.teacher) {
       const previousTeacher = await Teacher.findById(student.teacher);
       if (previousTeacher) {
@@ -416,25 +461,6 @@ export const assignStudentToTeacherHandler = asyncHandler(async (req, res) => {
       }
     }
 
-    // Remove student from the current teacher's students array if needed
-    if (teacher.classroom) {
-      const currentClassroom = await Classroom.findById(teacher.classroom);
-      if (currentClassroom) {
-        if (!currentClassroom.students.includes(studentId)) {
-          currentClassroom.students.push(studentId);
-          await currentClassroom.save();
-        }
-      }
-    }
-
-    // Ensure the teacher is only associated with one classroom
-    if (teacher.classroom) {
-      await Classroom.updateOne(
-        { _id: teacher.classroom },
-        { $pull: { teachers: teacherId } }
-      );
-    }
-
     // Assign student to the new teacher
     teacher.students.push(studentId);
     student.teacher = teacherId;
@@ -454,8 +480,8 @@ export const assignStudentToTeacherHandler = asyncHandler(async (req, res) => {
     await teacher.save();
     await student.save();
 
-    // Assign the teacher to the new classroom
-    if (newClassroom) {
+    // Assign the teacher to the new classroom if necessary
+    if (newClassroom && !newClassroom.teachers.includes(teacherId)) {
       await Classroom.updateOne(
         { _id: newClassroom._id },
         { $push: { teachers: teacherId } }
@@ -493,7 +519,9 @@ export const getClassroomsHandler = asyncHandler(async (req, res) => {
 });
 export const getClassroomByIdHandler = asyncHandler(async (req, res) => {
   try {
+    // console.log("iddd", req.params.id);
     const classroom = await Classroom.findById(req.params.id);
+    // console.log(classroom);
     if (!classroom) {
       throw new ApiError(404, "Classroom not found");
     }
@@ -509,7 +537,7 @@ export const getClassroomByIdHandler = asyncHandler(async (req, res) => {
 export const getTeachersHandler = asyncHandler(async (req, res) => {
   try {
     const teachers = await Teacher.find({})
-      .populate("classroom", "name")
+      .populate("classroom", "name students")
       .select("-password -refreshToken")
       .exec();
     res.status(200).json(
@@ -548,6 +576,37 @@ export const getStudentsHandler = asyncHandler(async (req, res) => {
     throw new ApiError(500, "error fetching students ");
   }
 });
+export const getTeacherById = asyncHandler(async (req, res) => {
+  try {
+    // console.log("iddd", req.params.id);
+    const teacher = await Teacher.findById(req.params.id);
+    // console.log(teacher);
+    if (!teacher) {
+      throw new ApiError(404, "Teacher not found");
+    }
+    res
+      .status(200)
+      .json(new ApiResponse(200, { teacher }, "Success while loading Teacher"));
+  } catch (error) {
+    throw new ApiError(500, "error fetching teacher");
+  }
+});
+export const getStudentById = asyncHandler(async (req, res) => {
+  try {
+    // console.log("iddd", req.params.id);
+    const student = await Student.findById(req.params.id);
+    // console.log(student);
+    if (!student) {
+      throw new ApiError(404, "Student not found");
+    }
+    res
+      .status(200)
+      .json(new ApiResponse(200, { student }, "Success while loading Student"));
+  } catch (error) {
+    throw new ApiError(500, "error fetching student");
+  }
+});
+
 // export const = asyncHandler(async(req,res)=>{
 
 // })

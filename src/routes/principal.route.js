@@ -2,7 +2,6 @@ import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { principalOnly } from "../middlewares/role.middleware.js";
 import {
-  assignStudentToClassroomHandler,
   assignStudentToTeacherHandler,
   assignTeacherToClassroomHandler,
   createClassroomHandler,
@@ -11,7 +10,9 @@ import {
   deleteTeacherHandler,
   getClassroomByIdHandler,
   getClassroomsHandler,
+  getStudentById,
   getStudentsHandler,
+  getTeacherById,
   getTeachersHandler,
   registerStudentHandler,
   registerTeacherHandler,
@@ -40,6 +41,7 @@ router
 
 router
   .route("/teachers/:id")
+  .get(authMiddleware, principalOnly, getTeacherById)
   .put(authMiddleware, principalOnly, updateTeacherHandler)
   .delete(authMiddleware, principalOnly, deleteTeacherHandler);
 

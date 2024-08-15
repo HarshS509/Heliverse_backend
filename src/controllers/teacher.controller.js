@@ -220,10 +220,10 @@ export const getTeacherTimetableHandler = asyncHandler(async (req, res) => {
   }
 });
 export const deleteTimetableHandler = asyncHandler(async (req, res) => {
-  console.log("hiii");
-  console.log(req.params);
+  // console.log("hiii");
+  // console.log(req.params);
   const { id } = req.params; // Get the timetable ID from the request parameters
-  console.log("idddddddddddddddddddddddddddddddddddddddd", id);
+  // console.log("idddddddddddddddddddddddddddddddddddddddd", id);
   try {
     // Step 1: Find the teacher who has this timetable
     const teacher = await Teacher.findById(req.user._id).populate("classroom");

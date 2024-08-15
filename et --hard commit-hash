@@ -1,0 +1,48 @@
+[33mcommit da21a632ddbee771851954149cb51347e1749dee[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Merge: d3d8dc0 8ce1d3c
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 11:38:14 2024 +0530
+
+    Merge branch 'main' of https://github.com/HarshS509/Heliverse_backend
+
+[33mcommit d3d8dc063d2a90122bc18cf29ff7ba8b751e29b6[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 11:37:16 2024 +0530
+
+    bug fixing
+
+[33mcommit 8ce1d3cbeeab2f96c2ff189b5b20c6a420f4b9c1[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Harsh Sojitra <103625115+HarshS509@users.noreply.github.com>
+Date:   Thu Aug 15 11:21:19 2024 +0530
+
+    Update .env
+
+[33mcommit 30c1b39ca8af0e2e7ffac8c3a13f137b9e84040b[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 11:20:15 2024 +0530
+
+    .env removed
+
+[33mcommit cc8f113c87440b3e652e92d2dc790e19d1a88df6[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 11:16:17 2024 +0530
+
+    Time-table handler changes
+
+[33mcommit c7ac78e5afea669518d18383f194dc72610e663e[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 07:32:54 2024 +0530
+
+    Removed junks
+
+[33mcommit 23675c0de7bde4cc2851953b84507b9502f9c986[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 07:30:21 2024 +0530
+
+    Add .gitignore and unstage node_modules!
+
+[33mcommit a2975b10c6f89fe1fec3e6b74e60bfe38593ea7a[m
+Author: HarshS509 <harshsojitra509@gmail.com>
+Date:   Thu Aug 15 07:29:15 2024 +0530
+
+    Add .gitignore and unstage node_modules
