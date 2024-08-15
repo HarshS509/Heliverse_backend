@@ -1,7 +1,7 @@
 import { timeToMinutes } from "../constants.js";
 import Classroom from "../models/classroom.model.js";
 import Student from "../models/student.model.js";
-import Teacher from "../models/Teacher.model.js";
+import Teacher from "../models/teacher.model.js";
 import Timetable from "../models/timetable.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";

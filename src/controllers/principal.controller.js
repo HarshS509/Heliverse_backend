@@ -2,7 +2,7 @@ import { cookieOptions } from "../constants.js";
 import Classroom from "../models/classroom.model.js";
 import Principal from "../models/principal.model.js";
 import Student from "../models/student.model.js";
-import Teacher from "../models/Teacher.model.js";
+import Teacher from "../models/teacher.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
