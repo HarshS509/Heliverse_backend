@@ -10,7 +10,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export async function a(req, res) {}
 export const createClassroomHandler = asyncHandler(async (req, res) => {
   try {
-    console.log("hi therrrrrrrr", req.body);
+    // console.log("hi therrrrrrrr", req.body);
     const { name, weekdayTimings, saturdayTimings } = req.body;
     const classroom = new Classroom({
       name,
@@ -78,7 +78,7 @@ export const deleteClassroomHandler = asyncHandler(async (req, res) => {
     res
       .status(201)
       .json(new ApiResponse(201, {}, "Classroom deleted successfully!"));
-    res.json({ message: "Classroom deleted successfully" });
+    // res.json({ message: "Classroom deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -42,7 +42,7 @@ export const loginHandler = asyncHandler(async (req, res) => {
           "User successfully logged in."
         )
       );
-    console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
+    // console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
   }
   if (role === "Teacher") {
     const user = await Teacher.findOne({ email: email }).select("+password");
@@ -154,7 +154,7 @@ export const registerPrincipalHandler = asyncHandler(async (req, res) => {
 
 export const logoutHandler = asyncHandler(async (req, res) => {
   const { role } = req.user;
-  console.log("logged");
+  // console.log("logged");
   if (!role) {
     throw new ApiError(400, "Please provide role");
   }

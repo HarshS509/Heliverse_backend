@@ -1,4 +1,5 @@
 import { timeToMinutes } from "../constants.js";
+import Classroom from "../models/classroom.model.js";
 import Student from "../models/student.model.js";
 import Teacher from "../models/Teacher.model.js";
 import Timetable from "../models/timetable.model.js";
@@ -8,7 +9,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getMyClassroomHandler = asyncHandler(async (req, res) => {
   try {
-    console.log(req.user._id, "user id");
+    // console.log(req.user._id, "user id");
     const teacher = await Teacher.findById(req.user._id)
       .populate("students", "firstName lastName email")
       .populate({
@@ -19,7 +20,7 @@ export const getMyClassroomHandler = asyncHandler(async (req, res) => {
           select: "schedule", // Include the fields you need from Timetable
         },
       });
-    console.log(teacher, "teacher");
+    // console.log(teacher, "teacher");
     if (!teacher) {
       throw new ApiError(404, "Teacher not found");
     }
@@ -58,7 +59,7 @@ export const createTimetableHandler = asyncHandler(async (req, res) => {
   }
   const classroom = teacher.classroom;
 
-  console.log("timeeeeee", timetableData, "timmmmmm");
+  // console.log("timeeeeee", timetableData, "timmmmmm");
   // Validate the timetable data
   timetableData.schedule.forEach((entry) => {
     const { day, periods } = entry;
@@ -113,6 +114,7 @@ export const createTimetableHandler = asyncHandler(async (req, res) => {
 });
 export const updateTimetableHandler = asyncHandler(async (req, res) => {
   const { updateData } = req.body;
+  // console.log("updateeee", updateData);
   const teacher = await Teacher.findById(req.user._id).populate("classroom");
 
   if (!teacher || !teacher.classroom) {
@@ -156,4 +158,106 @@ export const updateTimetableHandler = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, { timetable }, "Timetable updated successfully!")
     );
+});
+export const deleteStudentHandler = asyncHandler(async (req, res) => {
+  try {
+    // Find and delete the student
+    const student = await Student.findByIdAndDelete(req.params.id);
+    // console.log("hiiiiiiiiiiiiiiiiii");
+    if (!student) {
+      throw new ApiError(404, "Student not found");
+    }
+
+    // Remove student reference from associated classroom
+    if (student.classroom) {
+      await Classroom.updateOne(
+        { _id: student.classroom },
+        { $pull: { students: student._id } }
+      );
+    }
+
+    // Remove student reference from associated teacher
+    if (student.teacher) {
+      await Teacher.updateOne(
+        { _id: student.teacher },
+        { $pull: { students: student._id } }
+      );
+    }
+
+    // Respond with success message
+    res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Student deleted successfully"));
+  } catch (error) {
+    // Handle errors
+    throw new ApiError(500, "Error while deleting student");
+  }
+});
+export const getTeacherTimetableHandler = asyncHandler(async (req, res) => {
+  try {
+    // Find the teacher by their ID and populate the classroom field
+    const teacher = await Teacher.findById(req.user._id).populate("classroom");
+
+    // Check if the teacher or classroom is not found
+    if (!teacher || !teacher.classroom) {
+      throw new ApiError(404, "Classroom not found");
+    }
+
+    // Destructure timetable from the populated classroom
+    const { weekdaySchedule, saturdaySchedule } = teacher.classroom;
+
+    // Send the timetable as a response
+    res.status(200).json(
+      new ApiResponse(200, {
+        weekdaySchedule,
+        saturdaySchedule,
+        message: "Timetable fetched successfully",
+      })
+    );
+  } catch (error) {
+    // Handle any errors that occur
+    throw new ApiError(500, "Error while fetching timetable");
+  }
+});
+export const deleteTimetableHandler = asyncHandler(async (req, res) => {
+  console.log("hiii");
+  console.log(req.params);
+  const { id } = req.params; // Get the timetable ID from the request parameters
+  console.log("idddddddddddddddddddddddddddddddddddddddd", id);
+  try {
+    // Step 1: Find the teacher who has this timetable
+    const teacher = await Teacher.findById(req.user._id).populate("classroom");
+
+    if (!teacher) {
+      return res.status(404).json(new ApiError(404, "Teacher not found"));
+    }
+
+    // Step 2: Remove the timetable from the teacher's reference
+    await Teacher.findByIdAndUpdate(
+      teacher._id,
+      { $pull: { timetables: { _id: id } } } // Remove the timetable from the timetables array
+    );
+
+    // Step 3: Find the associated classroom using the timetable ID
+    const classroom = await Classroom.findOne({ "timetables._id": id });
+
+    if (classroom) {
+      // Remove the timetable from the classroom
+      await Classroom.findByIdAndUpdate(
+        classroom._id,
+        { $pull: { timetables: { _id: id } } } // Remove the timetable from the timetables array
+      );
+    }
+    await Timetable.findByIdAndDelete(id);
+    // Respond with a success message
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, { message: "Timetable deleted successfully" })
+      );
+  } catch (error) {
+    // Handle any errors that occur during the process
+    console.error("Error deleting timetable:", error);
+    res.status(500).json(new ApiError(500, "Error deleting timetable"));
+  }
 });
