@@ -1,0 +1,62 @@
+<!--
+// v0 by Vercel.
+// https://v0.dev/t/eOVTp7Wz7t6
+-->
+
+<div
+  class="rounded-lg border bg-card text-card-foreground shadow-sm"
+  data-v0-t="card"
+>
+  <div class="flex flex-col space-y-1.5 p-6">
+    <h3 class="whitespace-nowrap font-semibold tracking-tight text-2xl">
+      Login
+    </h3>
+    <p class="text-sm text-muted-foreground">Enter your credentials to login</p>
+  </div>
+  <div class="p-6 grid gap-4">
+    <div class="grid gap-2">
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="email"
+      >
+        Email
+      </label>
+      <input
+        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        id="email"
+        placeholder="m@example.com"
+        type="email"
+      />
+    </div>
+    <div class="grid gap-2">
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="password"
+      >
+        Password
+      </label>
+      <input
+        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        id="password"
+        type="password"
+      />
+    </div>
+    <div class="grid gap-2">
+      <label
+        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        for="role"
+      >
+        Role
+      </label>
+      <select
+        id="role"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      >
+        <option selected>Select a Role</option>
+        <option value="Principal">Principal</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Student">Student</option>
+      </select>
+    </div>
+  </div>
+</div>
